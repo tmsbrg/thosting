@@ -45,11 +45,19 @@
         state: present
         services: postgresdb
 
+  - name: Wait to allow Postgres to populate database
+    shell:
+        cmd: sleep 5s
+
   - name: Start XSS Hunter
     community.docker.docker_compose:
         project_src: /root/xsshunter
         state: present
         services: xsshunterexpress
+
+  - name: Wait to XSS Hunter to start up
+    shell:
+        cmd: sleep 5s
 
   - name: Get admin password
     shell:

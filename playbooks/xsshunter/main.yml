@@ -1,0 +1,59 @@
+---
+- name: Install XSS Hunter Express
+  hosts: all
+  remote_user: root
+
+  tasks:
+  - name: Update all packages to their latest version
+    ansible.builtin.apt:
+        name: "*"
+        state: latest
+
+  - name: Ensure Docker is installed
+    ansible.builtin.apt:
+        name: docker.io
+        state: latest
+
+  - name: Ensure Docker-Compose is installed
+    ansible.builtin.apt:
+        name: docker-compose
+        state: latest
+
+  - name: Copy repository
+    git:
+        repo: https://github.com/mandatoryprogrammer/xsshunter-express
+        force: yes
+        dest: /root/xsshunter
+
+  - name: Setup the configuration
+    template:
+        src: docker-compose.yaml.j2
+        dest: /root/xsshunter/docker-compose.yml
+
+  - name: Stop services
+    community.docker.docker_compose:
+        project_src: /root/xsshunter
+        state: absent
+
+  - name: Clear database
+    shell:
+        cmd: rm -rf /root/xsshunter/postgres-db-data/*
+
+  - name: Start postgres
+    community.docker.docker_compose:
+        project_src: /root/xsshunter
+        state: present
+        services: postgresdb
+
+  - name: Start XSS Hunter
+    community.docker.docker_compose:
+        project_src: /root/xsshunter
+        state: present
+        services: xsshunterexpress
+
+  - name: Get admin password
+    shell:
+        cmd: "docker logs xsshunter_xsshunterexpress_1 | grep PASSWORD:"
+    register: pw_output
+
+  - debug: var=pw_output.stdout_lines

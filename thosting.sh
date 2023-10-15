@@ -23,7 +23,7 @@ function usage {
     echo 'Uses DigitalOcean and Porkbun APIs to create servers and give instantly give them a subdomain'
     echo 'Also optionally uses Ansible to set them up with software (currently only supports xsshunter, playbook included!)'
     echo
-    echo 'Requirements: ansible. httpie, doctl'
+    echo 'Requirements: ansible, httpie, doctl'
     echo
     echo "First time setup: first, edit editme.sh to set domain to a domain you control that's managed by Porkbun."
     echo '    then, create a PAT for DigitalOcean and authenticate to DigitalOcean with `doctl auth init`'

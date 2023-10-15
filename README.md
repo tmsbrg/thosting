@@ -8,7 +8,7 @@ Also optionally uses Ansible to set them up with software (currently only suppor
 
 License: GPLv3
 
-Requirements: ansible. httpie, doctl
+Requirements: ansible, httpie, doctl
 
 First time setup:
 

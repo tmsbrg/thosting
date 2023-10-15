@@ -4,14 +4,14 @@ cmd="$1"
 name="$2"
 playbook="$3"
 
-domain="<your-domain-here>"
-ttl=300
-ssh_key="<ssh_key>"
 tag_name="thosting"
 playbook_wait_time=1m
 
 script="$(realpath "$0")"
 projectpath="$(dirname "$script")"
+
+# Load configs
+source "$projectpath/editme.sh"
 
 playbooks_dir="$projectpath"/playbooks
 
@@ -25,11 +25,11 @@ function usage {
     echo
     echo 'Requirements: ansible. httpie, doctl'
     echo
-    echo "First time setup: first, edit the script to set domain to a domain you control that's managed by Porkbun."
+    echo "First time setup: first, edit editme.sh to set domain to a domain you control that's managed by Porkbun."
     echo '    then, create a PAT for DigitalOcean and authenticate to DigitalOcean with `doctl auth init`'
-    echo '    then, link an SSH key to your DigitalOcean account and find its ID with `doctl compute ssh-key list`, edit the script and set ssh_key to this.'
+    echo '    then, link an SSH key to your DigitalOcean account and find its ID with `doctl compute ssh-key list`, edit editme.sh and set ssh_key to this.'
     echo '    create an API key for the Porkbun API and save it in ~/porkbun-apikey.txt (first line API key, second line secret key)'
-    echo '    For xsshunter playbook: Be sure to edit ./playbooks/xsshunter/group_vars/all to add your own email address there'
+    echo '    For xsshunter playbook: Be sure to edit editme.sh to add your own email address there'
     echo
     echo 'Usage examples:'
     echo '    Create a new VM and link random.<domain> subdomain to it:'
@@ -68,7 +68,7 @@ function config {
         echo "-- ERROR: Cannot find playbook $playbook!"
         exit 2
     fi
-    ansible-playbook --verbose -i "$projectpath/$name.hosts" "$playbooks_dir/$playbook/main.yml"
+    ansible-playbook -e mail="$mail" --verbose -i "$projectpath/$name.hosts" "$playbooks_dir/$playbook/main.yml"
 }
 
 function list {

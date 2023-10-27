@@ -32,7 +32,7 @@ function usage {
     echo '    For xsshunter playbook: Be sure to edit editme.sh to add your own email address there'
     echo
     echo 'Usage examples:'
-    echo '    Create a new VM and link random.<domain> subdomain to it:'
+    echo '    Create a new VM and link random1.<domain> subdomain to it:'
     echo '    thosting make random1'
     echo
     echo '    List current VMs:'

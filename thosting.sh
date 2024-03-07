@@ -51,7 +51,7 @@ function usage {
 function make {
     name="$1"
     echo "-- Making $name droplet on Digital Ocean and waiting for IP address..."
-    doctl compute droplet create "$name" --tag-name "$tag_name" --region ams3 --ssh-keys "$ssh_key" --size s-1vcpu-2gb-70gb-intel --image ubuntu-23-04-x64 --wait
+    doctl compute droplet create "$name" --tag-name "$tag_name" --region ams3 --ssh-keys "$ssh_key" --size s-1vcpu-2gb-70gb-intel --image ubuntu-23-10-x64 --wait
     echo "-- Getting IP address..."
     ip=$(doctl compute droplet get "$name" --format PublicIPv4 --no-header)
     echo "-- Adding $name.$domain subdomain on Porkbun..."

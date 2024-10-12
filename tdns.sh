@@ -36,17 +36,17 @@ function make {
     type="$2"
     content="$3"
     ttl="$4"
-    http -j https://porkbun.com/api/json/v3/dns/create/"$domain" secretapikey="$pb_secret" apikey="$pb_api" name="$subdomain" type="$type" content="$content" ttl="$ttl"
+    http -j https://api.porkbun.com/api/json/v3/dns/create/"$domain" secretapikey="$pb_secret" apikey="$pb_api" name="$subdomain" type="$type" content="$content" ttl="$ttl"
 }
 
 function list {
-    http -j https://porkbun.com/api/json/v3/dns/retrieve/"$domain" secretapikey="$pb_secret" apikey="$pb_api"
+    http -j https://api.porkbun.com/api/json/v3/dns/retrieve/"$domain" secretapikey="$pb_secret" apikey="$pb_api"
 }
 
 function destroy {
     subdomain="$1"
     type="$2"
-    http -j https://porkbun.com/api/json/v3/dns/deleteByNameType/"$domain"/"$type"/"$subdomain" secretapikey="$pb_secret" apikey="$pb_api"
+    http -j https://api.porkbun.com/api/json/v3/dns/deleteByNameType/"$domain"/"$type"/"$subdomain" secretapikey="$pb_secret" apikey="$pb_api"
 }
 
 case "$cmd" in

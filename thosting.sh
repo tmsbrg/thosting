@@ -48,24 +48,36 @@ function usage {
     echo '    thosting destroy random1'
 }
 
+function get_newest_lts_ubuntu {
+    echo "-- Finding newest LTS Ubuntu image on DigitalOcean..." 1>&2
+    image_line="$(doctl compute image list-distribution | grep -w Ubuntu | grep -w LTS | sort -n | tail -1 || exit 1)"
+    if [ -z "$image_line" ]; then
+        echo "-- ERROR: Cannot find Ubuntu LTS image, check code" 1>&2
+        exit 1
+    fi
+    echo "-- Found: $image_line" 1>&2
+    printf "%s" $(cut -d' ' -f1 <<< "$image_line")
+}
+
 function make {
     name="$1"
-    echo "-- Making $name droplet on Digital Ocean and waiting for IP address..."
-    doctl compute droplet create "$name" --tag-name "$tag_name" --region ams3 --ssh-keys "$ssh_key" --size s-1vcpu-2gb-70gb-intel --image ubuntu-23-10-x64 --wait
-    echo "-- Getting IP address..."
+    image="$(get_newest_lts_ubuntu)"
+    echo "-- Making $name droplet on Digital Ocean and waiting for IP address..." 1>&2
+    doctl compute droplet create "$name" --tag-name "$tag_name" --region ams3 --ssh-keys "$ssh_key" --size s-1vcpu-2gb-70gb-intel --image "$image" --wait || exit 1
+    echo "-- Getting IP address..." 1>&2
     ip=$(doctl compute droplet get "$name" --format PublicIPv4 --no-header)
-    echo "-- Adding $name.$domain subdomain on Porkbun..."
-    http -j https://porkbun.com/api/json/v3/dns/create/"$domain" secretapikey="$pb_secret" apikey="$pb_api" name="$name" type=A content="$ip" ttl="$ttl"
-    echo "-- Creating $name.hosts file for Ansible..."
-    echo "$name.$domain" > "$projectpath/$name.hosts"
+    echo "-- Adding $name.$domain subdomain on Porkbun..." 1>&2
+    http -j https://api.porkbun.com/api/json/v3/dns/create/"$domain" secretapikey="$pb_secret" apikey="$pb_api" name="$name" type=A content="$ip" ttl="$ttl"
+    echo "-- Creating $name.hosts file for Ansible..." 1>&2
+    echo "$name.$domain" > "$projectpath/$name.hosts" 1>&2
 }
 
 function config {
     name="$1"
     playbook="$2"
-    echo "-- Running playbook $playbook..."
+    echo "-- Running playbook $playbook..." 1>&2
     if [ '!' -d "$playbooks_dir/$playbook" ]; then
-        echo "-- ERROR: Cannot find playbook $playbook!"
+        echo "-- ERROR: Cannot find playbook $playbook!" 1>&2
         exit 2
     fi
     ansible-playbook -e mail="$mail" --verbose -i "$projectpath/$name.hosts" "$playbooks_dir/$playbook/main.yml"
@@ -77,28 +89,28 @@ function list {
 
 function destroy {
     name="$1"
-    echo "-- Destroying droplet"
+    echo "-- Destroying droplet" 1>&2
     doctl compute droplet delete "$name" -f
-    echo "-- Removing subdomain"
-    http -j https://porkbun.com/api/json/v3/dns/deleteByNameType/"$domain"/A/"$name" secretapikey="$pb_secret" apikey="$pb_api"
-    echo "-- Removing ansible hosts file"
+    echo "-- Removing subdomain" 1>&2
+    http -j https://api.porkbun.com/api/json/v3/dns/deleteByNameType/"$domain"/A/"$name" secretapikey="$pb_secret" apikey="$pb_api"
+    echo "-- Removing ansible hosts file" 1>&2
     rm "$projectpath/$name.hosts"
 }
 
 case "$cmd" in
 
     make)
-        echo "-- make $name"
+        echo "-- make $name" 1>&2
         make "$name"
         if [ '!' -z "$playbook" ]; then
-            echo "-- Waiting $playbook_wait_time for droplet to be ready..."
+            echo "-- Waiting $playbook_wait_time for droplet to be ready..." 1>&2
             sleep "$playbook_wait_time"
             config "$name" "$playbook"
         fi
         ;;
 
     config)
-        echo "-- config $name $playbook"
+        echo "-- config $name $playbook" 1>&2
         config "$name" "$playbook"
         ;;
 
@@ -111,12 +123,12 @@ case "$cmd" in
         ;;
 
     destroy)
-        echo "-- destroy $name"
+        echo "-- destroy $name" 1>&2
         destroy "$name"
         ;;
 
     *)
-        echo "Unknown command $cmd"
+        echo "Unknown command $cmd" 1>&2
         usage
         exit 1
         ;;

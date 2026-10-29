@@ -66,9 +66,14 @@ function make {
     doctl compute droplet create "$name" --tag-name "$tag_name" --region ams3 --ssh-keys "$ssh_key" --size s-1vcpu-2gb-70gb-intel --image "$image" --wait || exit 1
     sleep 5s
     echo "-- Getting IP address..." 1>&2
-    ip=$(doctl compute droplet get "$name" --format PublicIPv4 --no-header || (echo 'Error: No IP' && exit 1))
-    echo "-- Adding $name.$domain subdomain on Porkbun..." 1>&2
-    http -j https://api.porkbun.com/api/json/v3/dns/create/"$domain" secretapikey="$pb_secret" apikey="$pb_api" name="$name" type=A content="$ip" ttl="$ttl"
+    ip=''
+    while [ -z "$ip" ]; do 
+        ip=$(doctl compute droplet get "$name" --format PublicIPv4 --no-header)
+        sleep 2s
+    done
+    echo "-- Adding $name.$domain subdomain on Porkbun, IP: $ip..." 1>&2
+    http -j https://api.porkbun.com/api/json/v3/dns/create/"$domain" secretapikey="$pb_secret" apikey="$pb_api" name="$name" type=A content="$ip" ttl="$ttl" | cat
+    echo
     echo "-- Creating $name.hosts file for Ansible..." 1>&2
     echo "$name.$domain" > "$projectpath/$name.hosts" 1>&2
 }
